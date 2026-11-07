@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrazaLab Hp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: app de escritorio con barra superior + menú lateral por rol; en celular el menú pasa arriba como pestañas */
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --surface-2:#eef1f3; --line:#d3d9de; --line-strong:#9aa6af;
+  --fg:#1d2529; --muted:#5d6a72; --accent:#1c6a73; --accent-fg:#ffffff; --accent-soft:#e1eff0;
+  --ok:#2c7a4b; --ok-soft:#e3f2e8; --warn:#9a6a00; --warn-soft:#fbf1d9; --bad:#b03a2e; --bad-soft:#f8e4e1;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13181b; --surface:#1b2226; --surface-2:#232c31; --line:#334047; --line-strong:#5b6a73;
+  --fg:#e3e8eb; --muted:#9aa8b0; --accent:#5fb3bc; --accent-fg:#0d1416; --accent-soft:#1d3336;
+  --ok:#6cc58f; --ok-soft:#1b3326; --warn:#e2b44a; --warn-soft:#352b14; --bad:#ec8378; --bad-soft:#3a1f1c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13181b; --surface:#1b2226; --surface-2:#232c31; --line:#334047; --line-strong:#5b6a73;
+  --fg:#e3e8eb; --muted:#9aa8b0; --accent:#5fb3bc; --accent-fg:#0d1416; --accent-soft:#1d3336;
+  --ok:#6cc58f; --ok-soft:#1b3326; --warn:#e2b44a; --warn-soft:#352b14; --bad:#ec8378; --bad-soft:#3a1f1c; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.proto-bar{background:var(--surface-2);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);padding-block:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.proto-bar b{color:var(--fg);font-weight:600}
+
+/* login */
+.login-wrap{min-height:calc(100% - 30px);display:grid;place-items:center;padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.01em}
+.mark{width:30px;height:30px;border-radius:7px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:500}
+.login .lead{color:var(--muted);margin:4px 0 22px}
+.demo{margin-top:20px;border-top:1px dashed var(--line);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:8px}
+.demo-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* app shell */
+.app{display:grid;grid-template-rows:auto 1fr;min-height:calc(100% - 30px)}
+.top{background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));flex-wrap:wrap}
+.who{display:flex;align-items:center;gap:10px;font-size:13px;flex-wrap:wrap}
+.role{font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.shell{display:grid;grid-template-columns:210px 1fr;min-height:0}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:14px 0}
+.side a{display:block;padding:9px 18px;color:var(--fg);text-decoration:none;border-left:3px solid transparent;font-size:14px}
+.side a:hover{background:var(--surface-2)}
+.side a.on{border-left-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.side .grp{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:16px 18px 6px}
+.main{padding-block:22px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.main-in{max-width:1080px}
+h1{font-size:22px;letter-spacing:-.01em;margin:0 0 2px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 18px}
+h2{font-size:15px;margin:0 0 12px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.stack{display:grid;gap:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>.fld{flex:1 1 160px;min-width:0}
+.fld{display:grid;gap:5px;margin-bottom:12px}
+.fld label{font-size:12.5px;font-weight:500}
+.fld .hint{font-size:11.5px;color:var(--muted)}
+input,select{height:36px;border:1px solid var(--line-strong);border-radius:5px;background:var(--surface);padding:0 10px;width:100%}
+input[readonly]{background:var(--surface-2);color:var(--muted)}
+input:disabled,select:disabled{background:var(--surface-2);color:var(--muted)}
+.err-in{border-color:var(--bad)}
+.btn{height:36px;padding:0 14px;border-radius:5px;border:1px solid var(--line-strong);background:var(--surface);cursor:pointer;white-space:nowrap;font-weight:500}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn.link{border:none;background:none;color:var(--accent);padding:0;height:auto;text-decoration:underline}
+.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);background:var(--surface-2);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+tr.sel td{background:var(--accent-soft)}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid transparent;white-space:nowrap}
+.st-Recibida{background:var(--surface-2);border-color:var(--line-strong)}
+.st-Procesada{background:var(--ok-soft);color:var(--ok)}
+.st-Rechazada{background:var(--bad-soft);color:var(--bad)}
+.on-Activo,.on-Activa{background:var(--ok-soft);color:var(--ok)}
+.on-Inactivo,.on-Inactiva{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+
+.msg{border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.info{background:var(--surface-2);color:var(--muted)}
+.msg .actions{margin-left:auto}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.tile{display:block;text-decoration:none;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-height:110px}
+.tile:hover{border-color:var(--accent)}
+.tile b{display:block;font-size:15px;margin-bottom:4px}
+.tile span{color:var(--muted);font-size:12.5px}
+.tile.adm{border-style:dashed}
+.tile .tag{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+.tab{padding:9px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:none;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.tab.on{background:var(--surface);border-color:var(--line);color:var(--fg);font-weight:600;margin-bottom:-1px}
+
+.code-big{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:.02em}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin-bottom:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.patient-found{display:flex;gap:10px;align-items:center;background:var(--ok-soft);color:var(--ok);border-radius:5px;padding:8px 12px;font-size:13px}
+
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .side{border-right:none;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;padding:0}
+  .side a{border-left:none;border-bottom:3px solid transparent;white-space:nowrap;padding:12px 14px}
+  .side a.on{border-bottom-color:var(--accent)}
+  .side .grp{display:none}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){.view{animation:in .18s ease-out}@keyframes in{from{opacity:.4}to{opacity:1}}}
+</style>
+</head>
+<body>
+
+<div class="proto-bar"><span><b>Prototipo navegable</b> · TrazaLab Hp · Proyecto Integrado I</span><span>Datos ficticios · sin conexión a base de datos</span></div>
+<div id="root"></div>
+
+<script>
+(function(){
+// ---------- Datos de ejemplo (ficticios) ----------
+const DEP = [
+  {cod:'05',nom:'Antioquia'},{cod:'08',nom:'Atlántico'},{cod:'11',nom:'Bogotá, D.C.'},{cod:'76',nom:'Valle del Cauca'}];
+const MUN = [
+  {cod:'05001',nom:'Medellín',dep:'05'},{cod:'05088',nom:'Bello',dep:'05'},{cod:'05266',nom:'Envigado',dep:'05'},{cod:'05360',nom:'Itagüí',dep:'05'},{cod:'05615',nom:'Rionegro',dep:'05'},
+  {cod:'08001',nom:'Barranquilla',dep:'08'},{cod:'08758',nom:'Soledad',dep:'08'},
+  {cod:'11001',nom:'Bogotá, D.C.',dep:'11'},
+  {cod:'76001',nom:'Cali',dep:'76'},{cod:'76109',nom:'Buenaventura',dep:'76'},{cod:'76520',nom:'Palmira',dep:'76'}];
+const S = {
+  user:null,
+  users:[
+    {nom:'Ana Gómez',mail:'admin@lab.com',rol:'Administrador',on:true},
+    {nom:'Carlos Ruiz',mail:'auxiliar@lab.com',rol:'Auxiliar de laboratorio',on:true},
+    {nom:'Laura Díaz',mail:'laura@lab.com',rol:'Auxiliar de laboratorio',on:true},
+    {nom:'Pedro Mora',mail:'pedro@lab.com',rol:'Auxiliar de laboratorio',on:false}],
+  ips:[
+    {nit:'900123456',nom:'IPS Salud Norte',mun:'05001',on:true},
+    {nit:'800987654',nom:'Clínica del Valle',mun:'76001',on:true},
+    {nit:'901456789',nom:'Centro Médico Caribe',mun:'08001',on:true}],
+  tipos:[
+    {cod:'BG',nom:'Biopsia gástrica',on:true},
+    {cod:'AH',nom:'Antígeno en heces',on:true},
+    {cod:'SU',nom:'Suero (anticuerpos)',on:true}],
+  pacientes:[
+    {td:'CC',doc:'10203040',nom:'María',ape:'Pérez López',nac:'1984-03-12',sexo:'Femenino'},
+    {td:'CC',doc:'50607080',nom:'Juan',ape:'Ríos Mejía',nac:'1979-11-02',sexo:'Masculino'},
+    {td:'CC',doc:'90102030',nom:'Luis',ape:'Castro Díaz',nac:'1991-06-25',sexo:'Masculino'},
+    {td:'CC',doc:'11223344',nom:'Sara',ape:'León Gil',nac:'2001-01-30',sexo:'Femenino'}],
+  muestras:[
+    {cod:'HP-2026-000121',td:'CC',doc:'11223344',ips:'900123456',mun:'05001',tipo:'BG',toma:'2026-10-18',est:'Procesada',obs:''},
+    {cod:'HP-2026-000122',td:'CC',doc:'90102030',ips:'901456789',mun:'08001',tipo:'AH',toma:'2026-10-19',est:'Rechazada',obs:'Muestra sin rotular'},
+    {cod:'HP-2026-000123',td:'CC',doc:'50607080',ips:'800987654',mun:'76001',tipo:'BG',toma:'2026-10-19',est:'Procesada',obs:''},
+    {cod:'HP-2026-000124',td:'CC',doc:'10203040',ips:'900123456',mun:'05001',tipo:'BG',toma:'2026-10-20',est:'Recibida',obs:''}],
+  seq:124,
+  ui:{}
+};
+const TD = {CC:'Cédula de ciudadanía',TI:'Tarjeta de identidad',CE:'Cédula de extranjería',PA:'Pasaporte'};
+const ADMIN_ONLY = ['usuarios','catalogos'];
+const VIEWS = ['inicio','registrar','consultar','pacientes','catalogos','usuarios'];
+
+// ---------- utilidades ----------
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const munOf = c => MUN.find(m=>m.cod===c); const depOf = c => DEP.find(d=>d.cod===c);
+const ipsOf = n => S.ips.find(i=>i.nit===n); const tipoOf = c => S.tipos.find(t=>t.cod===c);
+const pacOf = (td,doc) => S.pacientes.find(p=>p.td===td && p.doc===doc);
+const fmt = d => d ? d.split('-').reverse().join('/') : '';
+const opts = (list, val, ph) => (ph?`<option value="">${esc(ph)}</option>`:'') + list.map(o=>`<option value="${esc(o.v)}"${o.v===val?' selected':''}>${esc(o.t)}</option>`).join('');
+const depOpts = v => opts(DEP.map(d=>({v:d.cod,t:d.nom})), v, 'Seleccione…');
+const munOpts = (dep,v) => dep ? opts(MUN.filter(m=>m.dep===dep).map(m=>({v:m.cod,t:m.nom})), v, 'Seleccione…') : '<option value="">Seleccione primero el departamento</option>';
+const ipsOpts = v => opts(S.ips.filter(i=>i.on).map(i=>({v:i.nit,t:i.nom})), v, 'Seleccione…');
+const tipoOpts = v => opts(S.tipos.filter(t=>t.on).map(t=>({v:t.cod,t:t.nom})), v, 'Seleccione…');
+const tdOpts = v => opts(Object.entries(TD).map(([k,t])=>({v:k,t})), v);
+const isAdmin = () => S.user && S.user.rol==='Administrador';
+
+// ---------- navegación ----------
+function go(v){ if(location.hash !== '#'+v) location.hash = v; else render(); }
+window.addEventListener('hashchange', render);
+
+function render(){
+  let v = (location.hash||'').slice(1);
+  if(!S.user){ return renderLogin(); }
+  if(!VIEWS.includes(v)) v='inicio';
+  const allowed = !ADMIN_ONLY.includes(v) || isAdmin();
+  $('#root').innerHTML = shell(v, allowed ? VIEW[v]() : denied());
+  bind(v, allowed);
+  window.scrollTo(0,0);
+}
+
+function shell(v, inner){
+  const link=(id,t)=>`<a href="#${id}" class="${v===id?'on':''}">${t}</a>`;
+  return `<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark">Hp</span>TrazaLab Hp</div>
+    <div class="who"><span>${esc(S.user.nom)}</span><span class="role">${esc(S.user.rol)}</span><button class="btn sm" id="logout">Cerrar sesión</button></div>
+  </header>
+  <div class="shell">
+    <nav class="side" aria-label="Menú principal">
+      ${link('inicio','Inicio')}${link('registrar','Registrar muestra')}${link('consultar','Consultar muestras')}${link('pacientes','Pacientes')}
+      ${isAdmin()?`<div class="grp">Administración</div>${link('catalogos','Catálogos')}${link('usuarios','Usuarios')}`:''}
+    </nav>
+    <main class="main"><div class="main-in view">${inner}</div></main>
+  </div></div>`;
+}
+function denied(){
+  return `<h1>Acceso restringido</h1><p class="sub">Esta opción solo está disponible para el rol Administrador.</p>
+  <div class="msg bad">Su rol (${esc(S.user.rol)}) no puede gestionar usuarios ni catálogos.</div>
+  <button class="btn" onclick="location.hash='inicio'">Volver al inicio</button>`;
+}
+
+// ---------- P1 · Inicio de sesión ----------
+function renderLogin(){
+  $('#root').innerHTML = `<div class="login-wrap"><form class="login" id="fLogin" novalidate>
+    <div class="brand"><span class="mark">Hp</span>TrazaLab Hp</div>
+    <p class="lead">Registro y trazabilidad de muestras de <i>Helicobacter pylori</i></p>
+    <div class="fld"><label for="lMail">Correo electrónico</label><input id="lMail" type="email" autocomplete="username" placeholder="usuario@lab.com"></div>
+    <div class="fld"><label for="lPass">Contraseña</label><input id="lPass" type="password" autocomplete="current-password" placeholder="••••"></div>
+    <div id="lErr"></div>
+    <button class="btn pri" style="width:100%;height:40px" type="submit">Ingresar</button>
+    <div class="demo"><span>Usuarios de prueba (contraseña <span class="mono">1234</span>):</span>
+      <div class="demo-row"><button type="button" class="btn sm" data-demo="admin@lab.com">Administrador</button><button type="button" class="btn sm" data-demo="auxiliar@lab.com">Auxiliar de laboratorio</button></div></div>
+  </form></div>`;
+  document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>{ $('#lMail').value=b.dataset.demo; $('#lPass').value='1234'; });
+  $('#fLogin').onsubmit = e => {
+    e.preventDefault();
+    const mail=$('#lMail').value.trim().toLowerCase(), pass=$('#lPass').value;
+    const u = S.users.find(x=>x.mail===mail);
+    if(!u || pass!=='1234'){ $('#lErr').innerHTML='<div class="msg bad">Usuario o contraseña incorrectos.</div>'; return; }
+    if(!u.on){ $('#lErr').innerHTML='<div class="msg bad">Este usuario está inactivo. Comuníquese con el administrador.</div>'; return; }
+    S.user=u; S.ui={}; go('inicio');
+  };
+}
+
+const VIEW = {};
+
+// ---------- P2 · Menú principal ----------
+VIEW.inicio = () => {
+  const t=(h,b,s,adm)=>`<a class="tile${adm?' adm':''}" href="#${h}">${adm?'<span class="tag">Solo administrador</span>':''}<b>${b}</b><span>${s}</span></a>`;
+  return `<h1>Hola, ${esc(S.user.nom.split(' ')[0])}</h1><p class="sub">¿Qué desea hacer?</p>
+  <div class="tiles">
+    ${t('registrar','Registrar muestra','Ingresar una muestra recibida y generar su código único')}
+    ${t('consultar','Consultar muestras','Buscar por código o documento, editar y actualizar el estado')}
+    ${t('pacientes','Pacientes','Registrar, consultar y corregir pacientes')}
+    ${isAdmin()? t('catalogos','Catálogos','Municipios (DIVIPOLA), IPS remitentes y tipos de muestra',1)+t('usuarios','Usuarios','Crear usuarios y asignar el rol',1):''}
+  </div>`;
+};
+
+// ---------- P3 · Usuarios ----------
+VIEW.usuarios = () => `<h1>Gestión de usuarios</h1><p class="sub">Crear, editar e inactivar usuarios. Los usuarios no se eliminan.</p>
+  <div class="grid2">
+    <div class="tbl-wrap"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${S.users.map((u,i)=>`<tr><td>${esc(u.nom)}</td><td>${esc(u.mail)}</td><td>${esc(u.rol)}</td><td><span class="pill on-${u.on?'Activo':'Inactivo'}">${u.on?'Activo':'Inactivo'}</span></td>
+      <td>${u===S.user?'<span class="hint" style="color:var(--muted);font-size:12px">Sesión actual</span>':`<button class="btn sm" data-tog="${i}">${u.on?'Inactivar':'Activar'}</button>`}</td></tr>`).join('')}
+    </tbody></table></div>
+    <form class="card" id="fUser" novalidate><h2>Nuevo usuario</h2>
+      <div id="uMsg"></div>
+      <div class="fld"><label for="uNom">Nombre completo</label><input id="uNom"></div>
+      <div class="fld"><label for="uMail">Correo electrónico</label><input id="uMail" type="email"></div>
+      <div class="fld"><label for="uRol">Rol</label><select id="uRol">${opts([{v:'Administrador',t:'Administrador'},{v:'Auxiliar de laboratorio',t:'Auxiliar de laboratorio'}],'', 'Seleccione…')}</select></div>
+      <p class="hint" style="font-size:12px;color:var(--muted);margin:0 0 12px">La contraseña temporal es 1234.</p>
+      <div class="actions"><button class="btn pri" type="submit">Guardar usuario</button></div>
+    </form>
+  </div>`;
+
+// ---------- P4 · Catálogos ----------
+VIEW.catalogos = () => {
+  const tab = S.ui.tab || 'ips';
+  const tb = (id,t)=>`<button class="tab${tab===id?' on':''}" data-tab="${id}" type="button">${t}</button>`;
+  let body='';
+  if(tab==='mun'){
+    const f = S.ui.depF||'';
+    const rows = MUN.filter(m=>!f||m.dep===f);
+    body = `<div class="grid2"><div>
+      <div class="fld" style="max-width:280px"><label for="depF">Filtrar por departamento</label><select id="depF">${opts(DEP.map(d=>({v:d.cod,t:d.nom})),f,'Todos')}</select></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Cód. depto.</th><th>Departamento</th><th>Cód. municipio</th><th>Municipio</th></tr></thead><tbody>
+      ${rows.map(m=>`<tr><td class="mono">${m.dep}</td><td>${esc(depOf(m.dep).nom)}</td><td class="mono">${m.cod}</td><td>${esc(m.nom)}</td></tr>`).join('')}
+      </tbody></table></div></div>
+      <form class="card" id="fMun" novalidate><h2>Nuevo municipio</h2><div id="mMsg"></div>
+        <div class="fld"><label for="mDep">Departamento</label><select id="mDep">${depOpts('')}</select></div>
+        <div class="fld"><label for="mCod">Código DIVIPOLA</label><input id="mCod" class="mono" inputmode="numeric" maxlength="5" placeholder="05001"><span class="hint">5 dígitos; los 2 primeros son el departamento.</span></div>
+        <div class="fld"><label for="mNom">Nombre del municipio</label><input id="mNom"></div>
+        <div class="actions"><button class="btn pri" type="submit">Guardar</button></div></form></div>`;
+  } else if(tab==='ips'){
+    body = `<div class="grid2"><div class="tbl-wrap"><table><thead><tr><th>NIT</th><th>IPS</th><th>Municipio</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${S.ips.map((x,i)=>`<tr><td class="mono">${x.nit}</td><td>${esc(x.nom)}</td><td>${esc(munOf(x.mun).nom)}</td><td><span class="pill on-${x.on?'Activa':'Inactiva'}">${x.on?'Activa':'Inactiva'}</span></td><td><button class="btn sm" data-ips="${i}" type="button">${x.on?'Inactivar':'Activar'}</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <form class="card" id="fIps" novalidate><h2>Nueva IPS</h2><div id="iMsg"></div>
+        <div class="fld"><label for="iNit">NIT</label><input id="iNit" class="mono" inputmode="numeric"></div>
+        <div class="fld"><label for="iNom">Nombre</label><input id="iNom"></div>
+        <div class="fld"><label for="iDep">Departamento</label><select id="iDep">${depOpts('')}</select></div>
+        <div class="fld"><label for="iMun">Municipio</label><select id="iMun" disabled>${munOpts('')}</select></div>
+        <div class="actions"><button class="btn pri" type="submit">Guardar</button></div></form></div>`;
+  } else {
+    body = `<div class="grid2"><div class="tbl-wrap"><table><thead><tr><th>Código</th><th>Tipo de muestra</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${S.tipos.map((x,i)=>`<tr><td class="mono">${x.cod}</td><td>${esc(x.nom)}</td><td><span class="pill on-${x.on?'Activo':'Inactivo'}">${x.on?'Activo':'Inactivo'}</span></td><td><button class="btn sm" data-tipo="${i}" type="button">${x.on?'Inactivar':'Activar'}</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <form class="card" id="fTipo" novalidate><h2>Nuevo tipo de muestra</h2><div id="tMsg"></div>
+        <div class="fld"><label for="tCod">Código</label><input id="tCod" class="mono" maxlength="4"></div>
+        <div class="fld"><label for="tNom">Nombre</label><input id="tNom"></div>
+        <div class="actions"><button class="btn pri" type="submit">Guardar</button></div></form></div>`;
+  }
+  return `<h1>Catálogos</h1><p class="sub">Datos estandarizados que alimentan las listas de selección del sistema.</p>
+    <div class="tabs" role="tablist">${tb('mun','Departamentos y municipios')}${tb('ips','IPS remitentes')}${tb('tipos','Tipos de muestra')}</div>${body}`;
+};
+
+// ---------- P5 · Pacientes ----------
+VIEW.pacientes = () => {
+  const u = S.ui.pac || {stage:'buscar', td:'CC', doc:''};
+  const found = u.stage==='existe' ? pacOf(u.td,u.doc) : null;
+  let bottom='';
+  if(u.stage==='existe'){
+    bottom = `<div class="msg warn">Ya existe un paciente con este documento. No se puede registrar de nuevo.</div>
+      <form class="card" id="fPacEdit" novalidate><h2>Datos del paciente</h2><div id="pMsg"></div>${pacFields(found)}
+      <div class="actions"><button class="btn pri" type="submit">Guardar cambios</button></div></form>`;
+  } else if(u.stage==='nuevo'){
+    bottom = `<div class="msg info">No hay un paciente con ${esc(TD[u.td])} ${esc(u.doc)}. Complete sus datos para registrarlo.</div>
+      <form class="card" id="fPacNew" novalidate><h2>Nuevo paciente</h2><div id="pMsg"></div>${pacFields(null)}
+      <div class="actions"><button class="btn" type="button" id="pCancel">Cancelar</button><button class="btn pri" type="submit">Guardar paciente</button></div></form>`;
+  }
+  return `<h1>Pacientes</h1><p class="sub">Verifique el documento antes de registrar: el sistema no permite pacientes duplicados.</p>
+  ${u.saved?`<div class="msg ok">${esc(u.saved)}${S.ui.back?'<span class="actions"><button class="btn sm" id="backReg">Volver a registrar la muestra</button></span>':''}</div>`:''}
+  <form class="card" id="fPacBuscar" novalidate style="margin-bottom:14px"><div class="row">
+    <div class="fld"><label for="pTd">Tipo de documento</label><select id="pTd">${tdOpts(u.td)}</select></div>
+    <div class="fld"><label for="pDoc">Número de documento</label><input id="pDoc" class="mono" inputmode="numeric" value="${esc(u.doc)}"></div>
+    <div class="fld"><button class="btn pri" type="submit">Verificar</button></div></div>
+    <p style="margin:0;font-size:12px;color:var(--muted)">Pruebe con <span class="mono">10203040</span> (ya existe) o con cualquier otro número.</p>
+  </form>${bottom}
+  <h2 style="margin-top:22px">Pacientes registrados</h2>
+  <div class="tbl-wrap"><table><thead><tr><th>Documento</th><th>Nombre</th><th>Fecha de nacimiento</th><th>Muestras</th></tr></thead><tbody>
+  ${S.pacientes.map(p=>`<tr><td class="mono">${p.td} ${p.doc}</td><td>${esc(p.nom+' '+p.ape)}</td><td>${fmt(p.nac)}</td><td>${S.muestras.filter(m=>m.td===p.td&&m.doc===p.doc).length}</td></tr>`).join('')}
+  </tbody></table></div>`;
+};
+function pacFields(p){
+  p = p||{};
+  return `<div class="row"><div class="fld"><label for="pNom">Nombres</label><input id="pNom" value="${esc(p.nom)}"></div><div class="fld"><label for="pApe">Apellidos</label><input id="pApe" value="${esc(p.ape)}"></div></div>
+  <div class="row"><div class="fld"><label for="pNac">Fecha de nacimiento</label><input id="pNac" type="date" value="${esc(p.nac)}"></div>
+  <div class="fld"><label for="pSexo">Sexo</label><select id="pSexo">${opts([{v:'Femenino',t:'Femenino'},{v:'Masculino',t:'Masculino'}],p.sexo||'','Seleccione…')}</select></div></div>`;
+}
+
+// ---------- P6 · Registrar muestra ----------
+VIEW.registrar = () => {
+  const r = S.ui.reg || {td:'CC',doc:'',pac:null,ips:'',dep:'',mun:'',tipo:'',toma:'2026-11-07'};
+  if(r.done){
+    const m=S.muestras.find(x=>x.cod===r.done), p=pacOf(m.td,m.doc);
+    return `<h1>Registrar muestra</h1><p class="sub">La muestra quedó registrada con un código único que no se puede repetir.</p>
+    <div class="card" style="max-width:560px">
+      <div class="msg ok" style="margin-bottom:12px">Muestra registrada correctamente</div>
+      <div style="font-size:12px;color:var(--muted)">Código asignado por el sistema</div>
+      <div class="code-big" style="margin:2px 0 14px">${m.cod}</div>
+      <dl class="kv"><dt>Paciente</dt><dd>${esc(p.nom+' '+p.ape)} · ${m.td} ${m.doc}</dd><dt>IPS</dt><dd>${esc(ipsOf(m.ips).nom)}</dd>
+      <dt>Municipio</dt><dd>${esc(munOf(m.mun).nom)} <span class="mono" style="color:var(--muted)">(${m.mun})</span></dd><dt>Tipo</dt><dd>${esc(tipoOf(m.tipo).nom)}</dd><dt>Fecha de toma</dt><dd>${fmt(m.toma)}</dd><dt>Estado</dt><dd><span class="pill st-Recibida">Recibida</span></dd></dl>
+      <div class="actions"><button class="btn" id="rOtra">Registrar otra</button><button class="btn pri" id="rVer">Ver muestra</button></div>
+    </div>`;
+  }
+  return `<h1>Registrar muestra</h1><p class="sub">Los datos se eligen de listas; el código lo asigna el sistema al guardar.</p>
+  <div id="rMsg"></div>
+  <form class="stack" id="fReg" novalidate>
+  <section class="card"><h2>1. Paciente</h2>
+    <div class="row"><div class="fld"><label for="rTd">Tipo de documento</label><select id="rTd">${tdOpts(r.td)}</select></div>
+    <div class="fld"><label for="rDoc">Número de documento</label><input id="rDoc" class="mono" inputmode="numeric" value="${esc(r.doc)}"></div>
+    <div class="fld"><button class="btn" type="button" id="rBuscar">Buscar paciente</button></div></div>
+    <div id="rPac">${r.pac?`<div class="patient-found">Paciente encontrado: <b>${esc(r.pac.nom+' '+r.pac.ape)}</b></div>`: r.noPac?`<div class="msg warn" style="margin:0">No existe un paciente con ese documento. <button class="btn link" type="button" id="rNuevoPac">Registrar paciente</button></div>`:'<p style="margin:0;font-size:12px;color:var(--muted)">Pruebe con <span class="mono">10203040</span>.</p>'}</div>
+  </section>
+  <section class="card"><h2>2. Datos de la muestra</h2>
+    <div class="row"><div class="fld"><label for="rIps">IPS remitente</label><select id="rIps">${ipsOpts(r.ips)}</select></div>
+    <div class="fld"><label for="rDep">Departamento</label><select id="rDep">${depOpts(r.dep)}</select></div>
+    <div class="fld"><label for="rMun">Municipio</label><select id="rMun"${r.dep?'':' disabled'}>${munOpts(r.dep,r.mun)}</select></div></div>
+    <div class="row"><div class="fld"><label for="rTipo">Tipo de muestra</label><select id="rTipo">${tipoOpts(r.tipo)}</select></div>
+    <div class="fld"><label for="rToma">Fecha de toma</label><input id="rToma" type="date" value="${esc(r.toma)}"></div>
+    <div class="fld"><label for="rCod">Código de la muestra</label><input id="rCod" class="mono" readonly value="Se asigna al guardar"></div></div>
+    <div class="actions"><button class="btn" type="button" id="rLimpiar">Limpiar</button><button class="btn pri" type="submit">Guardar muestra</button></div>
+  </section></form>`;
+};
+
+// ---------- P7 · Consultar muestras ----------
+VIEW.consultar = () => {
+  const c = S.ui.con || {crit:'codigo', q:'', sel:null, edit:false};
+  const q = c.q.trim().toUpperCase();
+  const list = S.muestras.filter(m=>!q || (c.crit==='codigo' ? m.cod.includes(q) : m.doc.includes(q))).slice().reverse();
+  const m = c.sel ? S.muestras.find(x=>x.cod===c.sel) : null;
+  let det = `<div class="card"><h2>Detalle de la muestra</h2><p style="color:var(--muted);margin:0">Seleccione una muestra de la tabla para ver su detalle, editarla o actualizar su estado.</p></div>`;
+  if(m){
+    const p=pacOf(m.td,m.doc);
+    det = `<div class="card"><h2>Detalle · <span class="mono">${m.cod}</span></h2><div id="dMsg"></div>
+    ${c.edit? `<form id="fEdit" novalidate>
+        <div class="fld"><label for="eIps">IPS remitente</label><select id="eIps">${ipsOpts(m.ips)}</select></div>
+        <div class="row"><div class="fld"><label for="eDep">Departamento</label><select id="eDep">${depOpts(munOf(m.mun).dep)}</select></div>
+        <div class="fld"><label for="eMun">Municipio</label><select id="eMun">${munOpts(munOf(m.mun).dep,m.mun)}</select></div></div>
+        <div class="row"><div class="fld"><label for="eTipo">Tipo de muestra</label><select id="eTipo">${tipoOpts(m.tipo)}</select></div>
+        <div class="fld"><label for="eToma">Fecha de toma</label><input id="eToma" type="date" value="${m.toma}"></div></div>
+        <div class="actions"><button class="btn" type="button" id="eCancel">Cancelar</button><button class="btn pri" type="submit">Guardar cambios</button></div></form>`
+    : `<dl class="kv"><dt>Paciente</dt><dd>${esc(p.nom+' '+p.ape)}</dd><dt>Documento</dt><dd class="mono">${m.td} ${m.doc}</dd><dt>IPS</dt><dd>${esc(ipsOf(m.ips).nom)}</dd>
+        <dt>Municipio</dt><dd>${esc(munOf(m.mun).nom)}</dd><dt>Tipo</dt><dd>${esc(tipoOf(m.tipo).nom)}</dd><dt>Fecha de toma</dt><dd>${fmt(m.toma)}</dd>
+        <dt>Estado</dt><dd><span class="pill st-${m.est}">${m.est}</span></dd>${m.obs?`<dt>Observación</dt><dd>${esc(m.obs)}</dd>`:''}</dl>
+      <form id="fEst" novalidate style="border-top:1px solid var(--line);padding-top:12px">
+        <div class="fld"><label for="sEst">Nuevo estado</label><select id="sEst">${opts(['Recibida','Procesada','Rechazada'].map(x=>({v:x,t:x})),m.est)}</select></div>
+        <div class="fld"><label for="sObs">Observación <span style="color:var(--muted);font-weight:400">(obligatoria al rechazar)</span></label><input id="sObs" value="${esc(m.obs)}"></div>
+        <div class="actions"><button class="btn" type="button" id="dEdit">Editar datos</button><button class="btn pri" type="submit">Actualizar estado</button></div>
+      </form>`}
+    </div>`;
+  }
+  return `<h1>Consultar muestras</h1><p class="sub">Busque por código de muestra o por documento del paciente.</p>
+  <form class="row" id="fBus" novalidate style="margin-bottom:14px">
+    <div class="fld" style="flex:0 1 200px"><label for="cCrit">Buscar por</label><select id="cCrit">${opts([{v:'codigo',t:'Código de muestra'},{v:'doc',t:'Documento del paciente'}],c.crit)}</select></div>
+    <div class="fld"><label for="cQ">Valor</label><input id="cQ" class="mono" value="${esc(c.q)}" placeholder="${c.crit==='codigo'?'HP-2026-000124':'10203040'}"></div>
+    <div class="fld" style="flex:0 0 auto"><button class="btn pri" type="submit">Buscar</button></div>
+  </form>
+  <div class="grid2">
+    <div class="tbl-wrap"><table><thead><tr><th>Código</th><th>Paciente</th><th>IPS</th><th>Toma</th><th>Estado</th></tr></thead><tbody>
+    ${list.length? list.map(x=>{const p=pacOf(x.td,x.doc);return `<tr class="click${x.cod===c.sel?' sel':''}" data-cod="${x.cod}" tabindex="0"><td class="mono">${x.cod}</td><td>${esc(p.nom+' '+p.ape.split(' ')[0])}</td><td>${esc(ipsOf(x.ips).nom)}</td><td>${fmt(x.toma)}</td><td><span class="pill st-${x.est}">${x.est}</span></td></tr>`}).join('')
+      : `<tr><td colspan="5" class="empty">No se encontraron muestras con ese criterio.</td></tr>`}
+    </tbody></table></div>
+    ${det}
+  </div>`;
+};
+
+// ---------- eventos por vista ----------
+function bind(v, allowed){
+  $('#logout').onclick = () => { S.user=null; S.ui={}; location.hash='login'; render(); };
+  if(!allowed) return;
+  const val = id => $('#'+id).value.trim();
+  const flag = (ids) => { let ok=true; ids.forEach(id=>{const e=$('#'+id); const bad=!e.value.trim(); e.classList.toggle('err-in',bad); if(bad) ok=false;}); return ok; };
+
+  if(v==='usuarios'){
+    document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{const u=S.users[+b.dataset.tog]; u.on=!u.on; render();});
+    $('#fUser').onsubmit=e=>{e.preventDefault();
+      if(!flag(['uNom','uMail','uRol'])){ $('#uMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+      const mail=val('uMail').toLowerCase();
+      if(S.users.some(u=>u.mail===mail)){ $('#uMsg').innerHTML='<div class="msg bad">Ya existe un usuario con ese correo.</div>'; return; }
+      S.users.push({nom:val('uNom'),mail,rol:val('uRol'),on:true}); render(); };
+  }
+  if(v==='catalogos'){
+    document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.tab; render();});
+    if($('#depF')) $('#depF').onchange=e=>{S.ui.depF=e.target.value; render();};
+    if($('#fMun')) $('#fMun').onsubmit=e=>{e.preventDefault();
+      if(!flag(['mDep','mCod','mNom'])){ $('#mMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+      const cod=val('mCod'), dep=val('mDep');
+      if(!/^\d{5}$/.test(cod) || cod.slice(0,2)!==dep){ $('#mMsg').innerHTML='<div class="msg bad">El código debe tener 5 dígitos y empezar por el código del departamento ('+dep+').</div>'; return; }
+      if(MUN.some(m=>m.cod===cod)){ $('#mMsg').innerHTML='<div class="msg bad">Ese código DIVIPOLA ya existe.</div>'; return; }
+      MUN.push({cod,nom:val('mNom'),dep}); S.ui.depF=dep; render(); };
+    if($('#fIps')){
+      $('#iDep').onchange=e=>{const m=$('#iMun'); m.innerHTML=munOpts(e.target.value,''); m.disabled=!e.target.value;};
+      document.querySelectorAll('[data-ips]').forEach(b=>b.onclick=()=>{const x=S.ips[+b.dataset.ips]; x.on=!x.on; render();});
+      $('#fIps').onsubmit=e=>{e.preventDefault();
+        if(!flag(['iNit','iNom','iDep','iMun'])){ $('#iMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+        if(S.ips.some(x=>x.nit===val('iNit'))){ $('#iMsg').innerHTML='<div class="msg bad">Ya existe una IPS con ese NIT.</div>'; return; }
+        S.ips.push({nit:val('iNit'),nom:val('iNom'),mun:val('iMun'),on:true}); render(); };
+    }
+    if($('#fTipo')){
+      document.querySelectorAll('[data-tipo]').forEach(b=>b.onclick=()=>{const x=S.tipos[+b.dataset.tipo]; x.on=!x.on; render();});
+      $('#fTipo').onsubmit=e=>{e.preventDefault();
+        if(!flag(['tCod','tNom'])){ $('#tMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+        const cod=val('tCod').toUpperCase();
+        if(S.tipos.some(x=>x.cod===cod)){ $('#tMsg').innerHTML='<div class="msg bad">Ya existe un tipo con ese código.</div>'; return; }
+        S.tipos.push({cod,nom:val('tNom'),on:true}); render(); };
+    }
+  }
+  if(v==='pacientes'){
+    if($('#backReg')) $('#backReg').onclick=()=>{ const r=S.ui.reg; if(r){ r.pac=pacOf(r.td,r.doc); r.noPac=!r.pac; } S.ui.back=false; go('registrar'); };
+    $('#fPacBuscar').onsubmit=e=>{e.preventDefault();
+      const td=val('pTd'), doc=val('pDoc');
+      if(!doc){ $('#pDoc').classList.add('err-in'); return; }
+      S.ui.pac={td,doc,stage: pacOf(td,doc)?'existe':'nuevo'}; render(); };
+    if($('#pCancel')) $('#pCancel').onclick=()=>{S.ui.pac={stage:'buscar',td:'CC',doc:''}; render();};
+    const save = isNew => e => { e.preventDefault();
+      if(!flag(['pNom','pApe','pNac','pSexo'])){ $('#pMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+      const u=S.ui.pac, data={nom:val('pNom'),ape:val('pApe'),nac:val('pNac'),sexo:val('pSexo')};
+      if(isNew){ S.pacientes.push({td:u.td,doc:u.doc,...data}); S.ui.pac={stage:'existe',td:u.td,doc:u.doc,saved:'Paciente registrado correctamente.'}; }
+      else { Object.assign(pacOf(u.td,u.doc),data); S.ui.pac={...u,saved:'Cambios guardados.'}; }
+      render(); };
+    if($('#fPacNew')) $('#fPacNew').onsubmit=save(true);
+    if($('#fPacEdit')) $('#fPacEdit').onsubmit=save(false);
+  }
+  if(v==='registrar'){
+    const r = S.ui.reg = S.ui.reg || {td:'CC',doc:'',pac:null,ips:'',dep:'',mun:'',tipo:'',toma:'2026-11-07'};
+    if(r.done){
+      $('#rOtra').onclick=()=>{S.ui.reg=null; render();};
+      $('#rVer').onclick=()=>{S.ui.con={crit:'codigo',q:r.done,sel:r.done,edit:false}; S.ui.reg=null; go('consultar');};
+      return;
+    }
+    const keep=()=>{ Object.assign(r,{td:val('rTd'),doc:val('rDoc'),ips:val('rIps'),dep:val('rDep'),mun:$('#rMun').value,tipo:val('rTipo'),toma:val('rToma')}); };
+    $('#rDep').onchange=e=>{const m=$('#rMun'); m.innerHTML=munOpts(e.target.value,''); m.disabled=!e.target.value;};
+    $('#rIps').onchange=e=>{ const x=ipsOf(e.target.value); if(x && !val('rDep')){ const d=munOf(x.mun).dep; $('#rDep').value=d; $('#rMun').innerHTML=munOpts(d,x.mun); $('#rMun').disabled=false; } };
+    $('#rBuscar').onclick=()=>{ keep(); r.pac=pacOf(r.td,r.doc)||null; r.noPac=!r.pac; render(); };
+    $('#rLimpiar').onclick=()=>{ S.ui.reg=null; render(); };
+    if($('#rNuevoPac')) $('#rNuevoPac').onclick=()=>{ keep(); S.ui.back=true; S.ui.pac={stage:'nuevo',td:r.td,doc:r.doc}; go('pacientes'); };
+    $('#fReg').onsubmit=e=>{e.preventDefault(); keep();
+      const okF=flag(['rIps','rDep','rMun','rTipo','rToma']);
+      if(!r.pac || r.pac.doc!==r.doc){ $('#rMsg').innerHTML='<div class="msg bad">Busque y seleccione primero al paciente.</div>'; $('#rDoc').classList.add('err-in'); return; }
+      if(!okF){ $('#rMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+      S.seq++; const cod='HP-2026-'+String(S.seq).padStart(6,'0');
+      S.muestras.push({cod,td:r.td,doc:r.doc,ips:r.ips,mun:r.mun,tipo:r.tipo,toma:r.toma,est:'Recibida',obs:''});
+      S.ui.reg={done:cod}; render(); };
+  }
+  if(v==='consultar'){
+    const c = S.ui.con = S.ui.con || {crit:'codigo',q:'',sel:null,edit:false};
+    $('#cCrit').onchange=e=>{c.crit=e.target.value; c.q=''; render();};
+    $('#fBus').onsubmit=e=>{e.preventDefault(); c.q=val('cQ'); c.edit=false; const q=c.q.toUpperCase(); const hit=S.muestras.filter(m=>c.crit==='codigo'?m.cod.includes(q):m.doc.includes(q)); c.sel = hit.length===1? hit[0].cod : null; render();};
+    document.querySelectorAll('tr[data-cod]').forEach(tr=>{ const pick=()=>{c.sel=tr.dataset.cod; c.edit=false; render();}; tr.onclick=pick; tr.onkeydown=e=>{if(e.key==='Enter') pick();}; });
+    const m = c.sel ? S.muestras.find(x=>x.cod===c.sel) : null;
+    if(m && !c.edit){
+      $('#dEdit').onclick=()=>{c.edit=true; render();};
+      $('#fEst').onsubmit=e=>{e.preventDefault();
+        const est=val('sEst'), obs=val('sObs');
+        if(est==='Rechazada' && !obs){ $('#sObs').classList.add('err-in'); $('#dMsg').innerHTML='<div class="msg bad">Escriba la observación para rechazar la muestra.</div>'; return; }
+        m.est=est; m.obs= est==='Rechazada'? obs : obs; render(); $('#dMsg').innerHTML='<div class="msg ok">Estado actualizado a '+est+'. El registro se conserva.</div>'; };
+    }
+    if(m && c.edit){
+      $('#eDep').onchange=e=>{$('#eMun').innerHTML=munOpts(e.target.value,'');};
+      $('#eCancel').onclick=()=>{c.edit=false; render();};
+      $('#fEdit').onsubmit=e=>{e.preventDefault();
+        if(!flag(['eIps','eDep','eMun','eTipo','eToma'])){ $('#dMsg').innerHTML='<div class="msg bad">Complete los campos marcados.</div>'; return; }
+        Object.assign(m,{ips:val('eIps'),mun:val('eMun'),tipo:val('eTipo'),toma:val('eToma')}); c.edit=false; render();
+        $('#dMsg').innerHTML='<div class="msg ok">Datos de la muestra actualizados. El código no cambia.</div>'; };
+    }
+  }
+}
+
+render();
+})();
+</script>
+</body>
+</html>
